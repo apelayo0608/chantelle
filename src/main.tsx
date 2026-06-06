@@ -408,6 +408,12 @@ function AdminPanel() {
         credentials: "include",
       });
       const payload = await response.json();
+      if (response.status === 401) {
+        setAdmin(null);
+        setGuests([]);
+        setLoginError(payload.message || "Admin login required.");
+        return;
+      }
       if (!response.ok) {
         throw new Error(payload.message || "Unable to load guests.");
       }

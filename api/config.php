@@ -42,8 +42,8 @@ function start_admin_session(): void
 
     session_set_cookie_params([
         'httponly' => true,
-        'samesite' => 'Lax',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'samesite' => 'None',
+        'secure' => true,
         'path' => '/',
     ]);
     session_start();
