@@ -78,6 +78,19 @@ function storeAdminToken(token: string) {
   }
 }
 
+async function readApiJson(response: Response) {
+  const body = await response.text();
+  if (!body.trim()) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw new Error(`API returned an invalid response (${response.status}).`);
+  }
+}
+
 function App() {
   const [view, setView] = useState<"rsvp" | "admin">("rsvp");
 
@@ -263,9 +276,9 @@ function RsvpForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const payload = await response.json();
+      const payload = await readApiJson(response);
       if (!response.ok) {
-        throw new Error(payload.message || "Unable to save RSVP.");
+        throw new Error(payload.message || `Unable to save RSVP. API returned ${response.status}.`);
       }
       setStatus("Your confirmation has been received. Thank you.");
       setForm(emptyForm);
@@ -447,7 +460,7 @@ function AdminPanel() {
       const response = await fetch(adminApiUrl("session.php"), {
         credentials: "include",
       });
-      const payload = await response.json();
+      const payload = await readApiJson(response);
       if (payload.authenticated) {
         setAdmin(payload.admin);
         await loadGuests();
@@ -470,7 +483,7 @@ function AdminPanel() {
       const response = await fetch(adminApiUrl("guests.php", token), {
         credentials: "include",
       });
-      const payload = await response.json();
+      const payload = await readApiJson(response);
       if (response.status === 401) {
         setAdmin(null);
         setGuests([]);
@@ -502,7 +515,7 @@ function AdminPanel() {
         credentials: "include",
         body: JSON.stringify({ username, password }),
       });
-      const payload = await response.json();
+      const payload = await readApiJson(response);
       if (!response.ok) {
         throw new Error(payload.message || "Unable to login.");
       }
