@@ -393,9 +393,12 @@ function RsvpForm() {
             <label className="full">
               Car Plate Number <span className="optional-label">Optional</span>
               <input
+                type="text"
+                inputMode="text"
+                autoComplete="off"
                 value={form.carPlateNumber}
                 onChange={(event) => update("carPlateNumber", event.target.value)}
-                placeholder="Example: ABC 1234"
+                placeholder="Any car plate number or parking note"
               />
             </label>
           </>
