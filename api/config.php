@@ -9,6 +9,10 @@ const DB_PASS = '++HROGQhykL2e~Yb';
 
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'Angel09234';
+const APP_TIMEZONE = 'Asia/Singapore';
+const MYSQL_TIMEZONE_OFFSET = '+08:00';
+
+date_default_timezone_set(APP_TIMEZONE);
 
 function send_json(array $payload, int $status = 200): void
 {
@@ -64,6 +68,7 @@ function root_db(): PDO
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+    $pdo->exec("SET time_zone = '" . MYSQL_TIMEZONE_OFFSET . "'");
 
     $pdo->exec(
         'CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '`
@@ -83,6 +88,7 @@ function db(): PDO
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+    $pdo->exec("SET time_zone = '" . MYSQL_TIMEZONE_OFFSET . "'");
 
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS guests (

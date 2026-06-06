@@ -42,6 +42,18 @@ const emptyForm: GuestForm = {
 
 const API_BASE = "https://events.fitacademy.ph/api/chantelle/";
 const ASSET_BASE = import.meta.env.BASE_URL;
+const SINGAPORE_DATE_FORMAT = new Intl.DateTimeFormat("en-SG", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Asia/Singapore",
+});
+
+function formatSingaporeDate(value: string) {
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+  const normalizedValue = value.includes("T") ? value : value.replace(" ", "T");
+  const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}+08:00`);
+  return Number.isNaN(date.getTime()) ? value : SINGAPORE_DATE_FORMAT.format(date);
+}
 
 function App() {
   const [view, setView] = useState<"rsvp" | "admin">("rsvp");
@@ -564,7 +576,7 @@ function AdminPanel() {
                       .join(", ") || "-"}
                   </td>
                   <td>{guest.allergies || "-"}</td>
-                  <td>{new Date(guest.createdAt).toLocaleString()}</td>
+                  <td>{formatSingaporeDate(guest.createdAt)}</td>
                 </tr>
               ))}
             </tbody>
