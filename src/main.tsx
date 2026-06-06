@@ -41,6 +41,7 @@ const emptyForm: GuestForm = {
 // const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const API_BASE = "http://fitoncloud.online/chantelle_api/";
+const ASSET_BASE = import.meta.env.BASE_URL;
 
 function App() {
   const [view, setView] = useState<"rsvp" | "admin">("rsvp");
@@ -94,7 +95,7 @@ function InvitationPage() {
         </div>
         <div className="portrait-wrap" aria-label="Invitation reference">
           <img
-            src="/assets/invitation-reference.jpg"
+            src={`${ASSET_BASE}assets/invitation-reference.jpg`}
             alt="Chantelle birthday and baptism invitation"
           />
         </div>
