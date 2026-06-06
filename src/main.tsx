@@ -42,6 +42,7 @@ const emptyForm: GuestForm = {
 
 const API_BASE = "https://events.fitacademy.ph/api/chantelle/";
 const ASSET_BASE = import.meta.env.BASE_URL;
+const ADMIN_TOKEN_STORAGE_KEY = "chantelle_admin_token";
 const SINGAPORE_DATE_FORMAT = new Intl.DateTimeFormat("en-SG", {
   dateStyle: "medium",
   timeStyle: "short",
@@ -53,6 +54,30 @@ function formatSingaporeDate(value: string) {
   const normalizedValue = value.includes("T") ? value : value.replace(" ", "T");
   const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}+08:00`);
   return Number.isNaN(date.getTime()) ? value : SINGAPORE_DATE_FORMAT.format(date);
+}
+
+function getAdminToken() {
+  return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
+}
+
+function setAdminToken(token: string) {
+  if (token) {
+    window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+  } else {
+    window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  }
+}
+
+function adminFetchOptions(options: RequestInit = {}): RequestInit {
+  const token = getAdminToken();
+  return {
+    ...options,
+    credentials: "include",
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  };
 }
 
 function App() {
@@ -394,7 +419,7 @@ function AdminPanel() {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/session.php`, {
-        credentials: "include",
+        ...adminFetchOptions(),
       });
       const payload = await response.json();
       if (payload.authenticated) {
@@ -417,7 +442,7 @@ function AdminPanel() {
     setError("");
     try {
       const response = await fetch(`${API_BASE}/guests.php`, {
-        credentials: "include",
+        ...adminFetchOptions(),
       });
       const payload = await response.json();
       if (response.status === 401) {
@@ -455,6 +480,7 @@ function AdminPanel() {
       if (!response.ok) {
         throw new Error(payload.message || "Unable to login.");
       }
+      setAdminToken(payload.token || "");
       setAdmin(payload.admin);
       await loadGuests();
     } catch (loginFailure) {
@@ -470,8 +496,9 @@ function AdminPanel() {
   async function logout() {
     await fetch(`${API_BASE}/logout.php`, {
       method: "POST",
-      credentials: "include",
+      ...adminFetchOptions(),
     });
+    setAdminToken("");
     setAdmin(null);
     setGuests([]);
   }
@@ -526,7 +553,7 @@ function AdminPanel() {
         <div className="admin-actions">
           <button onClick={logout}>Logout</button>
           <button onClick={loadGuests}>Refresh</button>
-          <a href={`${API_BASE}/export.php`}>Export Excel CSV</a>
+          <a href={`${API_BASE}/export.php?token=${encodeURIComponent(getAdminToken())}`}>Export Excel CSV</a>
         </div>
       </div>
 

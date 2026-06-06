@@ -6,7 +6,9 @@ require __DIR__ . '/config.php';
 allow_cors();
 start_admin_session();
 
+$authenticated = !empty($_SESSION['admin_logged_in']) || has_valid_admin_token();
+
 send_json([
-    'authenticated' => !empty($_SESSION['admin_logged_in']),
-    'admin' => !empty($_SESSION['admin_logged_in']) ? ['username' => $_SESSION['admin_username'] ?? ADMIN_USERNAME] : null,
+    'authenticated' => $authenticated,
+    'admin' => $authenticated ? ['username' => $_SESSION['admin_username'] ?? ADMIN_USERNAME] : null,
 ]);

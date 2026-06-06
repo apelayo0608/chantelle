@@ -30,7 +30,7 @@ function allow_cors(): void
         header('Access-Control-Allow-Credentials: true');
     }
 
-    header('Access-Control-Allow-Headers: Content-Type');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -56,9 +56,34 @@ function start_admin_session(): void
 function require_admin(): void
 {
     start_admin_session();
-    if (empty($_SESSION['admin_logged_in'])) {
+    if (empty($_SESSION['admin_logged_in']) && !has_valid_admin_token()) {
         send_json(['message' => 'Admin login required.'], 401);
     }
+}
+
+function admin_token(): string
+{
+    return hash_hmac('sha256', ADMIN_USERNAME, ADMIN_PASSWORD);
+}
+
+function get_bearer_token(): string
+{
+    $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if (preg_match('/Bearer\s+(.+)/i', $authorization, $matches) === 1) {
+        return trim($matches[1]);
+    }
+
+    return '';
+}
+
+function has_valid_admin_token(): bool
+{
+    $token = get_bearer_token();
+    if ($token === '' && isset($_GET['token'])) {
+        $token = (string) $_GET['token'];
+    }
+
+    return $token !== '' && hash_equals(admin_token(), $token);
 }
 
 function root_db(): PDO

@@ -18,7 +18,11 @@ if ($username === ADMIN_USERNAME && hash_equals(ADMIN_PASSWORD, $password)) {
     session_regenerate_id(true);
     $_SESSION['admin_logged_in'] = true;
     $_SESSION['admin_username'] = $username;
-    send_json(['message' => 'Logged in.', 'admin' => ['username' => $username]]);
+    send_json([
+        'message' => 'Logged in.',
+        'admin' => ['username' => $username],
+        'token' => admin_token(),
+    ]);
 }
 
 send_json(['message' => 'Invalid admin username or password.'], 401);
