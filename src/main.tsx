@@ -42,8 +42,10 @@ const emptyForm: GuestForm = {
 
 // const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-const API_BASE = "https://events.fitacademy.ph/api/chantelle/";
+const API_BASE = "https://events.fitacademy.ph/api/chantelle";
 const ASSET_BASE = import.meta.env.BASE_URL;
+const DIRECTIONS_URL = "https://maps.app.goo.gl/8wdKtagmyTfeggop9";
+const EVENT_CENTER = "https://maps.app.goo.gl/V3BGLm8iqS7tNPNt9";
 const ADMIN_TOKEN_STORAGE_KEY = "chantelle_admin_token";
 const SINGAPORE_DATE_FORMAT = new Intl.DateTimeFormat("en-SG", {
   dateStyle: "medium",
@@ -54,8 +56,12 @@ const SINGAPORE_DATE_FORMAT = new Intl.DateTimeFormat("en-SG", {
 function formatSingaporeDate(value: string) {
   const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
   const normalizedValue = value.includes("T") ? value : value.replace(" ", "T");
-  const date = new Date(hasTimezone ? normalizedValue : `${normalizedValue}+08:00`);
-  return Number.isNaN(date.getTime()) ? value : SINGAPORE_DATE_FORMAT.format(date);
+  const date = new Date(
+    hasTimezone ? normalizedValue : `${normalizedValue}+08:00`,
+  );
+  return Number.isNaN(date.getTime())
+    ? value
+    : SINGAPORE_DATE_FORMAT.format(date);
 }
 
 function readStoredAdminToken() {
@@ -99,7 +105,7 @@ function App() {
       <nav className="top-nav" aria-label="Main navigation">
         <a className="brand-mark" href="#home" onClick={() => setView("rsvp")}>
           <span>✝</span>
-          <strong>Chantelle</strong>
+          <strong>Chantelle Pelayo</strong>
         </a>
         <div className="nav-actions">
           <button
@@ -136,6 +142,14 @@ function InvitationPage() {
             <a className="primary-link" href="#rsvp">
               Confirm Attendance
             </a>
+            <a
+              className="ghost-link"
+              href={DIRECTIONS_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open Google Maps
+            </a>
             <a className="ghost-link" href="#details">
               View Details
             </a>
@@ -170,8 +184,49 @@ function InvitationPage() {
         />
       </section>
 
+      <DirectionsSection />
+
       <RsvpForm />
     </>
+  );
+}
+
+function DirectionsSection() {
+  return (
+    <section className="directions-section" id="directions">
+      <div className="section-heading">
+        <span>Directions</span>
+        <h2>Reception Location</h2>
+      </div>
+
+      <div className="directions-layout">
+        <div className="map-frame">
+          <img
+            src={`${ASSET_BASE}assets/direction.png`}
+            alt="Directions map to Greenwoods Events Center"
+          />
+        </div>
+
+        <div className="directions-copy">
+          <p className="map-label">Greenwoods Events Center</p>
+          <strong>
+            Use the corrected route line to reach the venue entrance.
+          </strong>
+          <small>
+            The link opens the exact location in Google Maps for live
+            navigation.
+          </small>
+          <a
+            className="primary-link directions-button"
+            href={EVENT_CENTER}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open in Google Maps
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -278,7 +333,10 @@ function RsvpForm() {
       });
       const payload = await readApiJson(response);
       if (!response.ok) {
-        throw new Error(payload.message || `Unable to save RSVP. API returned ${response.status}.`);
+        throw new Error(
+          payload.message ||
+            `Unable to save RSVP. API returned ${response.status}.`,
+        );
       }
       setStatus("Your confirmation has been received. Thank you.");
       setForm(emptyForm);
@@ -326,6 +384,7 @@ function RsvpForm() {
           >
             <option value="yes">Yes, I will attend</option>
             <option value="no">Sorry, I cannot attend</option>
+            <option value="not-sure">Not sure yet</option>
           </select>
         </label>
         {form.confirmed && (
@@ -410,7 +469,9 @@ function RsvpForm() {
                 inputMode="text"
                 autoComplete="off"
                 value={form.carPlateNumber}
-                onChange={(event) => update("carPlateNumber", event.target.value)}
+                onChange={(event) =>
+                  update("carPlateNumber", event.target.value)
+                }
                 placeholder="Any car plate number or parking note"
               />
             </label>
@@ -551,7 +612,12 @@ function AdminPanel() {
     const cleanQuery = query.trim().toLowerCase();
     if (!cleanQuery) return guests;
     return guests.filter((guest) =>
-      [guest.guestName, guest.contactNumber, guest.allergies, guest.carPlateNumber]
+      [
+        guest.guestName,
+        guest.contactNumber,
+        guest.allergies,
+        guest.carPlateNumber,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(cleanQuery),
