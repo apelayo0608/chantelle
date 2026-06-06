@@ -396,6 +396,7 @@ textarea {
 .admin-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -482,9 +483,19 @@ td {
     align-items: stretch;
     flex-direction: column;
   }
+
+  .admin-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 560px) {
+  .details-band,
+  .rsvp-section,
+  .admin-panel {
+    padding-inline: 14px;
+  }
+
   .top-nav {
     align-items: stretch;
     flex-direction: column;
@@ -499,5 +510,51 @@ td {
   .companion-row,
   .count-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-header {
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .admin-header h1 {
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+
+  .admin-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .admin-actions button,
+  .admin-actions a {
+    width: 100%;
+    padding-inline: 10px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .admin-actions a {
+    grid-column: 1 / -1;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat {
+    min-height: 104px;
+    padding: 16px;
+  }
+
+  .stat strong {
+    font-size: 2rem;
+  }
+
+  .table-toolbar input {
+    min-height: 52px;
   }
 }
