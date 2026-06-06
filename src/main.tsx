@@ -56,28 +56,24 @@ function formatSingaporeDate(value: string) {
   return Number.isNaN(date.getTime()) ? value : SINGAPORE_DATE_FORMAT.format(date);
 }
 
-function getAdminToken() {
-  return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
-}
-
-function setAdminToken(token: string) {
-  if (token) {
-    window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
-  } else {
-    window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+function readStoredAdminToken() {
+  try {
+    return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) || "";
+  } catch {
+    return "";
   }
 }
 
-function adminFetchOptions(options: RequestInit = {}): RequestInit {
-  const token = getAdminToken();
-  return {
-    ...options,
-    credentials: "include",
-    headers: {
-      ...(options.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  };
+function storeAdminToken(token: string) {
+  try {
+    if (token) {
+      window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+    } else {
+      window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    // iOS private browsing can reject storage writes. The in-memory token still works for the current login.
+  }
 }
 
 function App() {
@@ -410,16 +406,31 @@ function RsvpForm() {
 function AdminPanel() {
   const [guests, setGuests] = useState<GuestRecord[]>([]);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
+  const [adminToken, setAdminToken] = useState(readStoredAdminToken);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loginError, setLoginError] = useState("");
 
+  function rememberAdminToken(token: string) {
+    setAdminToken(token);
+    storeAdminToken(token);
+  }
+
+  function adminApiUrl(path: string, token = adminToken) {
+    const cleanBase = API_BASE.endsWith("/") ? API_BASE : `${API_BASE}/`;
+    const url = new URL(path, cleanBase);
+    if (token) {
+      url.searchParams.set("token", token);
+    }
+    return url.toString();
+  }
+
   async function checkSession() {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/session.php`, {
-        ...adminFetchOptions(),
+      const response = await fetch(adminApiUrl("session.php"), {
+        credentials: "include",
       });
       const payload = await response.json();
       if (payload.authenticated) {
@@ -437,12 +448,12 @@ function AdminPanel() {
     }
   }
 
-  async function loadGuests() {
+  async function loadGuests(token = adminToken) {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE}/guests.php`, {
-        ...adminFetchOptions(),
+      const response = await fetch(adminApiUrl("guests.php", token), {
+        credentials: "include",
       });
       const payload = await response.json();
       if (response.status === 401) {
@@ -480,9 +491,10 @@ function AdminPanel() {
       if (!response.ok) {
         throw new Error(payload.message || "Unable to login.");
       }
-      setAdminToken(payload.token || "");
+      const token = payload.token || "";
+      rememberAdminToken(token);
       setAdmin(payload.admin);
-      await loadGuests();
+      await loadGuests(token);
     } catch (loginFailure) {
       setLoginError(
         loginFailure instanceof Error
@@ -494,11 +506,11 @@ function AdminPanel() {
   }
 
   async function logout() {
-    await fetch(`${API_BASE}/logout.php`, {
+    await fetch(adminApiUrl("logout.php"), {
       method: "POST",
-      ...adminFetchOptions(),
+      credentials: "include",
     });
-    setAdminToken("");
+    rememberAdminToken("");
     setAdmin(null);
     setGuests([]);
   }
@@ -553,7 +565,7 @@ function AdminPanel() {
         <div className="admin-actions">
           <button onClick={logout}>Logout</button>
           <button onClick={loadGuests}>Refresh</button>
-          <a href={`${API_BASE}/export.php?token=${encodeURIComponent(getAdminToken())}`}>Export Excel CSV</a>
+          <a href={adminApiUrl("export.php")}>Export Excel CSV</a>
         </div>
       </div>
 
