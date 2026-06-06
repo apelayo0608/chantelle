@@ -40,7 +40,7 @@ const emptyForm: GuestForm = {
 
 // const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
-const API_BASE = "http://fitoncloud.online/chantelle_api/";
+const API_BASE = "https://events.fitacademy.ph/api/chantelle/";
 const ASSET_BASE = import.meta.env.BASE_URL;
 
 function App() {
