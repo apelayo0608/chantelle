@@ -125,12 +125,33 @@ function db(): PDO
             adult_count INT UNSIGNED NOT NULL DEFAULT 0,
             kid_count INT UNSIGNED NOT NULL DEFAULT 0,
             allergies TEXT NULL,
+            car_plate_number VARCHAR(80) NULL,
             confirmed TINYINT(1) NOT NULL DEFAULT 1,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
     );
+    ensure_guest_column($pdo, 'car_plate_number', 'VARCHAR(80) NULL AFTER allergies');
 
     return $pdo;
+}
+
+function ensure_guest_column(PDO $pdo, string $column, string $definition): void
+{
+    $statement = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = :schema
+           AND TABLE_NAME = "guests"
+           AND COLUMN_NAME = :column'
+    );
+    $statement->execute([
+        ':schema' => DB_NAME,
+        ':column' => $column,
+    ]);
+
+    if ((int) $statement->fetchColumn() === 0) {
+        $pdo->exec('ALTER TABLE guests ADD COLUMN ' . $column . ' ' . $definition);
+    }
 }
 
 function read_json_body(): array
@@ -156,6 +177,7 @@ function normalize_guest_row(array $row): array
         'adultCount' => (int) $row['adult_count'],
         'kidCount' => (int) $row['kid_count'],
         'allergies' => $row['allergies'] ?? '',
+        'carPlateNumber' => $row['car_plate_number'] ?? '',
         'confirmed' => (bool) $row['confirmed'],
         'createdAt' => $row['created_at'],
     ];

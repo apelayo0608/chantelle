@@ -15,6 +15,7 @@ type GuestForm = {
   adultCount: number;
   kidCount: number;
   allergies: string;
+  carPlateNumber: string;
   confirmed: boolean;
 };
 
@@ -35,6 +36,7 @@ const emptyForm: GuestForm = {
   adultCount: 1,
   kidCount: 0,
   allergies: "",
+  carPlateNumber: "",
   confirmed: true,
 };
 
@@ -205,6 +207,7 @@ function RsvpForm() {
           adultCount: 0,
           kidCount: 0,
           allergies: "",
+          carPlateNumber: "",
         };
       }
 
@@ -386,6 +389,15 @@ function RsvpForm() {
                 placeholder="Example: peanuts, seafood, milk, none"
               />
             </label>
+
+            <label className="full">
+              Car Plate Number <span className="optional-label">Optional</span>
+              <input
+                value={form.carPlateNumber}
+                onChange={(event) => update("carPlateNumber", event.target.value)}
+                placeholder="Example: ABC 1234"
+              />
+            </label>
           </>
         )}
 
@@ -523,7 +535,7 @@ function AdminPanel() {
     const cleanQuery = query.trim().toLowerCase();
     if (!cleanQuery) return guests;
     return guests.filter((guest) =>
-      [guest.guestName, guest.contactNumber, guest.allergies]
+      [guest.guestName, guest.contactNumber, guest.allergies, guest.carPlateNumber]
         .join(" ")
         .toLowerCase()
         .includes(cleanQuery),
@@ -580,7 +592,7 @@ function AdminPanel() {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search guest, contact, allergies"
+          placeholder="Search guest, contact, car plate, allergies"
         />
       </div>
 
@@ -598,6 +610,7 @@ function AdminPanel() {
                 <th>Kids</th>
                 <th>Companions</th>
                 <th>Allergies</th>
+                <th>Car Plate</th>
                 <th>Date</th>
               </tr>
             </thead>
@@ -615,6 +628,7 @@ function AdminPanel() {
                       .join(", ") || "-"}
                   </td>
                   <td>{guest.allergies || "-"}</td>
+                  <td>{guest.carPlateNumber || "-"}</td>
                   <td>{formatSingaporeDate(guest.createdAt)}</td>
                 </tr>
               ))}

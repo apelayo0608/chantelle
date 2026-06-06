@@ -17,6 +17,7 @@ $companions = $data['companions'] ?? [];
 $adultCount = max(0, (int) ($data['adultCount'] ?? 0));
 $kidCount = max(0, (int) ($data['kidCount'] ?? 0));
 $allergies = trim((string) ($data['allergies'] ?? ''));
+$carPlateNumber = trim((string) ($data['carPlateNumber'] ?? ''));
 $confirmed = !empty($data['confirmed']) ? 1 : 0;
 
 if ($confirmed === 0) {
@@ -52,6 +53,7 @@ $statement = $pdo->prepare(
         adult_count,
         kid_count,
         allergies,
+        car_plate_number,
         confirmed,
         created_at
     ) VALUES (
@@ -62,6 +64,7 @@ $statement = $pdo->prepare(
         :adult_count,
         :kid_count,
         :allergies,
+        :car_plate_number,
         :confirmed,
         CURRENT_TIMESTAMP
     )'
@@ -75,6 +78,7 @@ $statement->execute([
     ':adult_count' => $adultCount,
     ':kid_count' => $kidCount,
     ':allergies' => $allergies,
+    ':car_plate_number' => $carPlateNumber,
     ':confirmed' => $confirmed,
 ]);
 

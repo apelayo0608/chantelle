@@ -26,6 +26,7 @@ fputcsv($output, [
     'Kids',
     'Companion Names',
     'Allergies / Food Notes',
+    'Car Plate Number',
     'Submitted At',
 ]);
 
@@ -45,6 +46,7 @@ foreach ($rows as $row) {
         $guest['kidCount'],
         implode(', ', array_filter($companions)),
         $guest['allergies'],
+        $guest['carPlateNumber'],
         $guest['createdAt'],
     ]);
 }

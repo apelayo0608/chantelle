@@ -322,6 +322,12 @@ label {
   font-size: 0.9rem;
 }
 
+.optional-label {
+  color: var(--rose);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 input,
 select,
 textarea {
